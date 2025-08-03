@@ -1,0 +1,13 @@
+:root {
+    --primary-color: #4A90E2;
+    --secondary-color: #50E3C2;
+    --accent-color: #F5A623;
+    --background-color: #F7F7F7;
+    --text-color: #333333;
+    --border-color: #E0E0E0;
+    --loading-spinner-color: #4A90E2;
+    --mask-opacity: 0.5;
+    --canvas-border-radius: 8px;
+    --tool-panel-height: 60px;
+    --color-picker-size: 30px;
+}
