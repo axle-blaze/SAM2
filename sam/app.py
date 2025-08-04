@@ -119,8 +119,13 @@ def segment_image(image: str):
 
             segment_image.sam2_model = model
             segment_image.mask_generator = SAM2AutomaticMaskGenerator(
-                model, points_per_side=24, pred_iou_thresh=0.7,
-                stability_score_thresh=0.92, crop_n_layers=0, min_mask_region_area=100,
+                    model,
+                    points_per_side=16,
+                    pred_iou_thresh=0.85,
+                    stability_score_thresh=0.95,
+                    crop_n_layers=1,
+                    crop_overlap_ratio=0.4,
+                    min_mask_region_area=800,
             )
             segment_image.model_loaded = True
             logger.info("✅ SAM2.1 model loaded successfully")

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { SAM2Response } from '../types';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://sam2-segmentation-stable-ec89c96-v1.app.beam.cloud';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://sam2-segmentation-stable-ec89c96-v4.app.beam.cloud';
 const SAM2_ENDPOINT = process.env.REACT_APP_SAM2_ENDPOINT || '';
 const AUTH_TOKEN = process.env.AUTH || 'mFjna2hQQX1UQtkL0__Kk8vxSURDZdWsb45cFRdUzOTeOMsAdY62Eri4f_l6v-evi5XxMg8TPMWyPkf3S1aKgA==';
 
