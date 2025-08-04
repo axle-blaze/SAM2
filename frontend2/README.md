@@ -460,3 +460,358 @@ export const useConfirmation = () => {
   return { showConfirmation, ConfirmationModal };
 };
 ```
+
+## 🧪 Development & Testing
+
+### Available Scripts
+
+```bash
+# Development
+npm start              # Start development server
+npm run build          # Create production build
+npm test              # Run test suite
+npm test -- --coverage # Run tests with coverage
+npm run lint          # Check code quality
+npm run lint:fix      # Fix linting issues
+npm run type-check    # TypeScript type checking
+
+# Advanced
+npm run eject         # Eject from Create React App (irreversible)
+npm run analyze       # Bundle size analysis
+```
+
+### Code Quality Standards
+
+#### **ESLint Configuration**
+```json
+// .eslintrc.json
+{
+  "extends": [
+    "react-app",
+    "react-app/jest",
+    "@typescript-eslint/recommended"
+  ],
+  "rules": {
+    "no-unused-vars": "error",
+    "prefer-const": "error",
+    "@typescript-eslint/explicit-function-return-type": "warn"
+  }
+}
+```
+
+#### **TypeScript Configuration**
+```json
+// tsconfig.json
+{
+  "compilerOptions": {
+    "target": "es5",
+    "lib": ["dom", "dom.iterable", "es6"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx"
+  }
+}
+```
+
+### Testing Strategy
+
+#### **Unit Tests**
+```typescript
+// Example component test
+import { render, screen, fireEvent } from '@testing-library/react';
+import ImageUpload from '../ImageUpload/ImageUpload';
+
+test('handles file upload', () => {
+  const mockOnUpload = jest.fn();
+  render(<ImageUpload onImageUpload={mockOnUpload} isUploading={false} />);
+  
+  const input = screen.getByRole('button');
+  const file = new File(['test'], 'test.png', { type: 'image/png' });
+  
+  fireEvent.change(input, { target: { files: [file] } });
+  expect(mockOnUpload).toHaveBeenCalledWith(file);
+});
+```
+
+#### **Integration Tests**
+```typescript
+// API integration test
+import { ApiService } from '../services/api';
+
+test('generates masks successfully', async () => {
+  const api = new ApiService();
+  const mockResponse = { mask_count: 5, image_id: 'test_123' };
+  
+  global.fetch = jest.fn(() =>
+    Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve(mockResponse),
+    })
+  ) as jest.Mock;
+
+  const result = await api.generateAndStoreMasks('base64data');
+  expect(result.mask_count).toBe(5);
+});
+```
+
+### Performance Optimization
+
+#### **Code Splitting**
+```typescript
+// Lazy loading for better performance
+const ColorPicker = React.lazy(() => import('./ColorPicker/ColorPicker'));
+const MaskOverlay = React.lazy(() => import('./MaskOverlay/MaskOverlay'));
+
+// Usage with Suspense
+<Suspense fallback={<LoadingSpinner />}>
+  <ColorPicker color={color} onChange={handleColorChange} />
+</Suspense>
+```
+
+#### **Memory Management**
+```typescript
+// Cleanup effects to prevent memory leaks
+useEffect(() => {
+  const handleResize = () => setWindowSize(window.innerWidth);
+  window.addEventListener('resize', handleResize);
+  
+  return () => {
+    window.removeEventListener('resize', handleResize);
+  };
+}, []);
+```
+
+#### **Image Optimization**
+```typescript
+// Efficient image handling
+const processImage = useCallback((file: File) => {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  
+  // Resize if too large
+  if (file.size > MAX_FILE_SIZE) {
+    canvas.width = Math.min(image.width, MAX_WIDTH);
+    canvas.height = Math.min(image.height, MAX_HEIGHT);
+    ctx?.drawImage(image, 0, 0, canvas.width, canvas.height);
+  }
+}, []);
+```
+
+## 🚀 Deployment
+
+### Production Build
+
+```bash
+# Create optimized build
+npm run build
+
+# Analyze bundle size
+npm install -g webpack-bundle-analyzer
+npx webpack-bundle-analyzer build/static/js/*.js
+```
+
+### Environment-Specific Builds
+
+#### **Development**
+```bash
+# Use development environment
+npm start
+# Uses .env.development automatically
+```
+
+#### **Production**
+```bash
+# Build with production config
+npm run build
+# Uses .env.production automatically
+```
+
+#### **Staging**
+```bash
+# Custom environment
+REACT_APP_ENV=staging npm run build
+```
+
+### Deployment Platforms
+
+#### **Vercel** (Recommended)
+```bash
+# Install Vercel CLI
+npm i -g vercel
+
+# Deploy
+vercel --prod
+
+# Environment variables in Vercel dashboard:
+# REACT_APP_API_BASE_URL=https://your-api.com
+```
+
+#### **Netlify**
+```bash
+# Build and deploy
+npm run build
+# Upload build/ folder to Netlify
+# Set environment variables in Netlify dashboard
+```
+
+#### **AWS S3 + CloudFront**
+```bash
+# Build application
+npm run build
+
+# Sync to S3
+aws s3 sync build/ s3://your-bucket-name --delete
+
+# Invalidate CloudFront
+aws cloudfront create-invalidation --distribution-id YOUR_ID --paths "/*"
+```
+
+#### **GitHub Pages**
+```bash
+# Install gh-pages
+npm install --save-dev gh-pages
+
+# Add to package.json
+"homepage": "https://yourusername.github.io/your-repo",
+"scripts": {
+  "predeploy": "npm run build",
+  "deploy": "gh-pages -d build"
+}
+
+# Deploy
+npm run deploy
+```
+
+## 🎨 Customization
+
+### Theming with Tailwind
+
+#### **Custom Colors**
+```javascript
+// tailwind.config.js
+module.exports = {
+  theme: {
+    extend: {
+      colors: {
+        brand: {
+          50: '#f0f9ff',
+          500: '#3b82f6',
+          900: '#1e3a8a',
+        },
+        accent: '#10b981',
+      }
+    }
+  }
+}
+```
+
+#### **Component Styling**
+```typescript
+// Use CSS modules or styled-components for complex styling
+const StyledButton = styled.button`
+  ${tw`px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600`}
+  transition: all 0.2s ease-in-out;
+`;
+```
+
+### Adding New Features
+
+#### **New Component Checklist**
+1. Create component with TypeScript interface
+2. Add comprehensive prop types
+3. Implement error boundaries
+4. Add unit tests
+5. Update documentation
+6. Add to Storybook (if applicable)
+
+#### **State Management Extensions**
+```typescript
+// Extend the main state interface
+interface AppState {
+  // Existing state
+  currentImage: string | null;
+  masks: Mask[];
+  selectedMasks: Set<number>;
+  
+  // New features
+  favorites: string[];
+  recentColors: RGBA[];
+  userPreferences: UserPreferences;
+}
+```
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+#### **Build Failures**
+```bash
+# Clear cache
+npm start -- --reset-cache
+
+# Reinstall dependencies
+rm -rf node_modules package-lock.json
+npm install
+
+# Check TypeScript errors
+npm run type-check
+```
+
+#### **API Connection Issues**
+```typescript
+// Check environment variables
+console.log('API URL:', process.env.REACT_APP_API_BASE_URL);
+
+// Test API connectivity
+fetch(`${process.env.REACT_APP_API_BASE_URL}/images`)
+  .then(response => console.log('API Status:', response.status))
+  .catch(error => console.error('API Error:', error));
+```
+
+#### **Performance Issues**
+```typescript
+// Use React DevTools Profiler
+// Identify unnecessary re-renders with useMemo and useCallback
+
+const expensiveComputation = useMemo(() => {
+  return masks.map(mask => processMaxData(mask));
+}, [masks]);
+
+const stableCallback = useCallback((maskId: number) => {
+  setSelectedMasks(prev => new Set(prev).add(maskId));
+}, []);
+```
+
+### Browser Support
+
+- **Modern Browsers**: Chrome 90+, Firefox 88+, Safari 14+, Edge 90+
+- **Mobile**: iOS Safari 14+, Chrome Mobile 90+
+- **Features Used**: ES2018, CSS Grid, Flexbox, Canvas API, File API
+
+### Debugging Tools
+
+```typescript
+// Development helpers
+if (process.env.NODE_ENV === 'development') {
+  // Enable React DevTools
+  window.__REACT_DEVTOOLS_GLOBAL_HOOK__ = window.__REACT_DEVTOOLS_GLOBAL_HOOK__ || {};
+  
+  // Debug API calls
+  window.debugAPI = ApiService;
+  
+  // Performance monitoring
+  console.time('Component Render');
+}
+```
+
+---
+
+**Built with React, TypeScript, Tailwind CSS, and ❤️**
