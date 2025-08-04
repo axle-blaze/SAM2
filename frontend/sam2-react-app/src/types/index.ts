@@ -1,8 +1,13 @@
 export interface MaskData {
-  id: string;
-  mask: string; // base64 encoded mask
-  selected: boolean;
+  id: number;
+  mask_png: string; // base64 encoded PNG mask
+  selected?: boolean;
   color?: string;
+  bbox?: number[];
+  score?: number;
+  area?: number;
+  predicted_iou?: number;
+  stability_score?: number;
 }
 
 export interface ImageData {
@@ -17,6 +22,17 @@ export interface SAM2Response {
   masks: string[];
   mask_count: number;
   error?: string;
+}
+
+export interface MaskResponse {
+  image_id: string;
+  masks: {
+    masks: MaskData[];
+    width: number;
+    height: number;
+  };
+  total_masks: number;
+  status: string;
 }
 
 export interface Point {

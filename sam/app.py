@@ -210,6 +210,7 @@ def segment_image(image: str):
         # Sort masks by area (smallest to largest). This is crucial for frontend hit testing.
         masks.sort(key=lambda x: x.get('area', 0))
 
+        id = 0
         for mask_data in masks:
             segmentation = mask_data.get("segmentation")
             if segmentation is not None and segmentation.size > 0:
@@ -221,10 +222,12 @@ def segment_image(image: str):
                     b64_string = base64.b64encode(buf.getvalue()).decode("utf-8")
                     
                     processed_masks.append({
+                        "id": id,
                         "mask_b64": b64_string,
                         "bbox": [int(c) for c in mask_data.get("bbox", [0,0,0,0])],
                         "area": int(mask_data.get("area", 0))
                     })
+            id += 1
 
     logger.info(f"✅ Successfully processed and returned {len(mask_b64_list)} masks.")
-    return {"width": width, "height": height, "masks": mask_b64_list, "processed_masks": processed_masks}
+    return {"width": width, "height": height, "processed_masks": processed_masks}

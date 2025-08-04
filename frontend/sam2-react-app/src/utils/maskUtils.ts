@@ -1,3 +1,54 @@
+import { MaskData } from '../types';
+
+/**
+ * Utility functions for working with mask data
+ */
+
+/**
+ * Convert hex color to RGB tuple
+ */
+export function hexToRgb(hex: string): [number, number, number] {
+  if (!hex) return [0, 0, 0];
+  hex = hex.replace("#", "");
+  const bigint = parseInt(hex, 16);
+  return [(bigint >> 16) & 255, (bigint >> 8) & 255, bigint & 255];
+}
+
+/**
+ * Generate a random color for a mask
+ */
+export function generateRandomColor(): string {
+  const colors = [
+    '#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff',
+    '#ff8000', '#8000ff', '#ff0080', '#80ff00', '#0080ff', '#ff8080',
+    '#80ff80', '#8080ff', '#ffff80', '#ff80ff', '#80ffff'
+  ];
+  return colors[Math.floor(Math.random() * colors.length)];
+}
+
+/**
+ * Assign random colors to masks that don't have colors
+ */
+export function assignColorsToMasks(masks: MaskData[]): MaskData[] {
+  return masks.map(mask => ({
+    ...mask,
+    color: mask.color || generateRandomColor()
+  }));
+}
+
+/**
+ * Validate mask data structure
+ */
+export function isValidMask(mask: any): mask is MaskData {
+  return (
+    typeof mask === 'object' &&
+    mask !== null &&
+    typeof mask.id === 'number' &&
+    typeof mask.mask_png === 'string' &&
+    mask.mask_png.length > 0
+  );
+}
+
 export const generateId = (): string => {
   return Math.random().toString(36).substr(2, 9);
 };
