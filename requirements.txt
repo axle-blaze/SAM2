@@ -37,6 +37,20 @@ multidict==6.6.3
 mypy_extensions==1.1.0
 networkx==3.5
 numpy==2.2.6
+nvidia-cublas-cu12==12.6.4.1
+nvidia-cuda-cupti-cu12==12.6.80
+nvidia-cuda-nvrtc-cu12==12.6.77
+nvidia-cuda-runtime-cu12==12.6.77
+nvidia-cudnn-cu12==9.5.1.17
+nvidia-cufft-cu12==11.3.0.4
+nvidia-cufile-cu12==1.11.1.6
+nvidia-curand-cu12==10.3.7.77
+nvidia-cusolver-cu12==11.7.1.2
+nvidia-cusparse-cu12==12.5.4.2
+nvidia-cusparselt-cu12==0.6.3
+nvidia-nccl-cu12==2.26.2
+nvidia-nvjitlink-cu12==12.6.85
+nvidia-nvtx-cu12==12.6.77
 onnxruntime==1.22.1
 opencv-python==4.12.0.88
 packaging==25.0
@@ -54,6 +68,7 @@ Pygments==2.19.2
 PyNaCl==1.5.0
 pyreadline3==3.5.4
 python-dateutil==2.9.0.post0
+python-multipart==0.0.20
 pytz==2025.2
 requests==2.32.4
 rich==13.9.4
@@ -66,6 +81,7 @@ sympy==1.14.0
 torch==2.7.1
 torchaudio==2.7.1
 torchvision==0.22.1
+triton==3.3.1
 typeguard==2.13.3
 typing-inspection==0.4.1
 typing_extensions==4.14.1
