@@ -27,6 +27,8 @@ const ImageSelector: React.FC<ImageSelectorProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const { showConfirmation, ConfirmationModal } = useConfirmation();
 
+
+  // Some cahges
   const fetchImages = async () => {
     setLoading(true);
     setError('');
