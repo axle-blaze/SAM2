@@ -229,7 +229,12 @@ async def generate_and_store_masks(
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error calling SAM API: {str(e)}")
-    
+    # Strip data URL prefix if present
+    if payload.original_image_b64.startswith('data:image/'):
+        # Find the comma that separates the header from the base64 data
+        comma_index = payload.original_image_b64.find(',')
+        if comma_index != -1:
+            payload.original_image_b64 = payload.original_image_b64[comma_index + 1:]
     # Store in database using model_dump instead of dict
     db[image_id] = {
         "original_image_b64": payload.original_image_b64,
@@ -322,6 +327,7 @@ async def get_image_info(image_id: str):
         "width": record.get("width"),
         "height": record.get("height"),
         "created_at": record.get("created_at"),
+        "original_image_b64": record.get("original_image_b64"),  # Include original image
         "available_masks": [
             {
                 "id": mask.id,
@@ -423,6 +429,28 @@ async def get_mask_at_point(
         "all_containing_masks": [m["mask_id"] for m in containing_masks]
     }
 
+
+@app.delete("/images/{image_id}")
+async def delete_image(image_id: str):
+    """
+    Delete a stored image and all its associated masks.
+    """
+    # Load database
+    db = load_db()
+    
+    if image_id not in db:
+        raise HTTPException(status_code=404, detail=f"Image with ID '{image_id}' not found")
+    
+    # Remove the image from database
+    del db[image_id]
+    
+    # Save updated database
+    save_db(db)
+    
+    return {
+        "message": f"Image '{image_id}' deleted successfully",
+        "image_id": image_id
+    }
 
 
 if __name__ == "__main__":

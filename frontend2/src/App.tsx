@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import ImageUploader from './components/ImageUploader';
+import ImageSelector from './components/ImageSelector/ImageSelector';
 import ImageDisplay from './components/ImageDisplay';
 import MaskGrid from './components/MaskGrid';
 import LoadingSpinner from './components/LoadingSpinner';
@@ -16,11 +17,25 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [imageWidth, setImageWidth] = useState<number | undefined>();
   const [imageHeight, setImageHeight] = useState<number | undefined>();
+  const [maskSelections, setMaskSelections] = useState<MaskSelectionState>({});
+
+  // Predefined colors for masks (memoized to avoid useCallback dependency issues)
+  const defaultColors = React.useMemo(() => [
+    [255, 0, 0, 128],    // Red
+    [0, 255, 0, 128],    // Green
+    [0, 0, 255, 128],    // Blue
+    [255, 255, 0, 128],  // Yellow
+    [255, 0, 255, 128],  // Magenta
+    [0, 255, 255, 128],  // Cyan
+    [255, 128, 0, 128],  // Orange
+    [128, 0, 255, 128],  // Purple
+  ] as [number, number, number, number][], []);
 
   const generateMasks = useCallback(async (imageBase64: string) => {
     setIsLoading(true);
     setError(null);
     setRenderedImage(null);
+    setMaskSelections({}); // Clear mask selections when generating new masks
     
     try {
       // Generate and store masks
@@ -38,6 +53,47 @@ const App: React.FC = () => {
       const errorMessage = err instanceof Error ? err.message : 'Failed to generate masks';
       setError(errorMessage);
       console.error('Error generating masks:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const loadExistingImage = useCallback(async (selectedImageId: string) => {
+    if (!selectedImageId) {
+      // Clear current selection
+      setCurrentImage(null);
+      setImageId(null);
+      setMasks([]);
+      setRenderedImage(null);
+      setMaskSelections({}); // Clear mask selections
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Get image info and masks
+      const imageInfo = await apiService.getImageInfo(selectedImageId);
+      
+      // Set the current image data
+      setImageId(selectedImageId);
+      setMasks(imageInfo.available_masks);
+      setImageWidth(imageInfo.width);
+      setImageHeight(imageInfo.height);
+      
+      // Construct the original image data URL (assuming it was stored as base64)
+      // You might need to adjust this based on how the original image is stored
+      const originalImageBase64 = `data:image/png;base64,${imageInfo.original_image_b64 || ''}`;
+      setCurrentImage(originalImageBase64);
+      console.log('Loaded existing image:', imageInfo, originalImageBase64);
+      // Clear any existing rendered image
+      setRenderedImage(null);
+      setMaskSelections({}); // Clear mask selections when loading new image
+      
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load existing image');
+      console.error('Error loading existing image:', err);
     } finally {
       setIsLoading(false);
     }
@@ -63,12 +119,39 @@ const App: React.FC = () => {
         render_instructions: renderInstructions,
       });
       setRenderedImage(`data:image/png;base64,${result.rendered_image_b64}`);
+      console.log('Rendered masks successfully:', result);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to render masks';
       setError(errorMessage);
       console.error('Error rendering masks:', err);
     }
   }, [imageId]);
+
+  const toggleMaskSelection = useCallback((maskId: number) => {
+    const maskIndex = masks.findIndex(m => m.id === maskId);
+    if (maskIndex === -1) return;
+
+    const newSelections = { ...maskSelections };
+    
+    if (!newSelections[maskId]) {
+      // Mask not selected, select it with default color
+      newSelections[maskId] = {
+        isSelected: true,
+        color: defaultColors[maskIndex % defaultColors.length],
+      };
+    } else {
+      // Mask exists, toggle its selection
+      newSelections[maskId] = {
+        ...newSelections[maskId],
+        isSelected: !newSelections[maskId].isSelected,
+      };
+    }
+
+    setMaskSelections(newSelections);
+    
+    // Trigger render update
+    renderSelectedMasks(newSelections);
+  }, [masks, maskSelections, defaultColors, renderSelectedMasks]);
 
   const handleImageClick = useCallback(async (event: React.MouseEvent<HTMLImageElement>) => {
     if (!imageId || !imageWidth || !imageHeight) return;
@@ -84,16 +167,16 @@ const App: React.FC = () => {
       const result = await apiService.getMaskAtPoint(imageId, x, y);
       
       if (result.mask_id !== null) {
-        // Show success message or auto-select mask
-        console.log(`Found mask ${result.mask_id} at point (${x}, ${y})`);
-        // You could auto-select the mask here if desired
+        // Toggle the mask selection
+        toggleMaskSelection(result.mask_id);
+        console.log(`Toggled mask ${result.mask_id} at point (${x}, ${y})`);
       } else {
         console.log(`No mask found at point (${x}, ${y})`);
       }
     } catch (err) {
       console.error('Error getting mask at point:', err);
     }
-  }, [imageId, imageWidth, imageHeight]);
+  }, [imageId, imageWidth, imageHeight, toggleMaskSelection]);
 
   const resetApp = () => {
     setCurrentImage(null);
@@ -103,6 +186,7 @@ const App: React.FC = () => {
     setError(null);
     setImageWidth(undefined);
     setImageHeight(undefined);
+    setMaskSelections({}); // Clear mask selections
   };
 
   return (
@@ -156,16 +240,70 @@ const App: React.FC = () => {
           </div>
         )}
 
-        {/* Image Upload Section */}
+        {/* Image Upload and Selection Section */}
         {!currentImage && !isLoading && (
-          <div className="text-center">
-            <ImageUploader onImageUpload={generateMasks} isLoading={isLoading} />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Upload New Image */}
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <h2 className="text-xl font-semibold mb-4">Upload New Image</h2>
+              <ImageUploader onImageUpload={generateMasks} isLoading={isLoading} />
+            </div>
+
+            {/* Select Existing Image */}
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <h2 className="text-xl font-semibold mb-4">Select Existing Image</h2>
+              <ImageSelector 
+                onImageSelect={loadExistingImage}
+                currentImageId={imageId}
+                className="w-full"
+              />
+              <div className="mt-4 text-sm text-gray-600">
+                Select from previously uploaded and processed images
+              </div>
+            </div>
           </div>
         )}
 
         {/* Image Display and Mask Selection */}
         {currentImage && (
           <div className="space-y-8">
+            {/* Current Image Info and Controls */}
+            <div className="bg-white rounded-lg shadow p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    Current Image: {imageId}
+                  </h2>
+                  <p className="text-sm text-gray-600">
+                    {imageWidth && imageHeight ? `${imageWidth}×${imageHeight}` : 'Loading dimensions...'}
+                    {masks.length > 0 && ` • ${masks.length} masks available`}
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <div className="min-w-64">
+                    <ImageSelector 
+                      onImageSelect={loadExistingImage}
+                      currentImageId={imageId}
+                      className="w-full"
+                    />
+                  </div>
+                  <button
+                    onClick={() => {
+                      setCurrentImage(null);
+                      setImageId(null);
+                      setMasks([]);
+                      setRenderedImage(null);
+                      setError(null);
+                      setMaskSelections({}); // Clear mask selections
+                    }}
+                    className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors whitespace-nowrap"
+                  >
+                    New Image
+                  </button>
+                </div>
+              </div>
+            </div>
+
             {/* Image Display */}
             <ImageDisplay
               originalImage={currentImage}
@@ -181,7 +319,14 @@ const App: React.FC = () => {
                 <h2 className="text-xl font-semibold mb-4 text-gray-900">
                   Mask Selection ({masks.length} masks found)
                 </h2>
-                <MaskGrid masks={masks} onSelectionChange={renderSelectedMasks} />
+                <MaskGrid 
+                  masks={masks} 
+                  onSelectionChange={(selections) => {
+                    setMaskSelections(selections);
+                    renderSelectedMasks(selections);
+                  }}
+                  selections={maskSelections}
+                />
               </div>
             )}
 
@@ -195,7 +340,7 @@ const App: React.FC = () => {
                   <li>• Click on mask thumbnails to select/deselect them</li>
                   <li>• Click on color bars below selected masks to customize colors</li>
                   <li>• Use "Select All" to quickly select all masks</li>
-                  <li>• Click on the original image to find masks at specific points</li>
+                  <li>• <strong>Click on the original image to toggle masks at specific points</strong></li>
                   <li>• Switch between "Original Image" and "Rendered Masks" tabs to compare</li>
                   <li>• Download the rendered result using the Download button</li>
                 </ul>

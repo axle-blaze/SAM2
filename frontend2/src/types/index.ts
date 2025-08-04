@@ -17,6 +17,7 @@ export interface ImageInfo {
   width: number;
   height: number;
   created_at: string;
+  original_image_b64?: string; // Add this field
   available_masks: Mask[];
 }
 

@@ -186,11 +186,17 @@ const MaskItem: React.FC<MaskItemProps> = ({
 interface MaskGridProps {
   masks: Mask[];
   onSelectionChange: (selections: MaskSelectionState) => void;
+  selections?: MaskSelectionState; // Make it optional for backward compatibility
 }
 
-const MaskGrid: React.FC<MaskGridProps> = ({ masks, onSelectionChange }) => {
-  const [selections, setSelections] = useState<MaskSelectionState>({});
+const MaskGrid: React.FC<MaskGridProps> = ({ masks, onSelectionChange, selections: controlledSelections }) => {
+  const [internalSelections, setInternalSelections] = useState<MaskSelectionState>({});
   const [selectAllState, setSelectAllState] = useState<'none' | 'some' | 'all'>('none');
+
+  // Use controlled selections if provided, otherwise use internal state
+  const selections = controlledSelections || internalSelections;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const setSelections = controlledSelections ? onSelectionChange : setInternalSelections;
 
   // Predefined colors for masks
   const defaultColors: [number, number, number, number][] = [
@@ -228,9 +234,13 @@ const MaskGrid: React.FC<MaskGridProps> = ({ masks, onSelectionChange }) => {
       };
     });
 
-    setSelections(newSelections);
+    if (controlledSelections) {
+      onSelectionChange(newSelections);
+    } else {
+      setInternalSelections(newSelections);
+      onSelectionChange(newSelections);
+    }
     setSelectAllState(shouldSelectAll ? 'all' : 'none');
-    onSelectionChange(newSelections);
   };
 
   const handleMaskToggle = (maskId: number) => {
@@ -249,9 +259,13 @@ const MaskGrid: React.FC<MaskGridProps> = ({ masks, onSelectionChange }) => {
       };
     }
 
-    setSelections(newSelections);
+    if (controlledSelections) {
+      onSelectionChange(newSelections);
+    } else {
+      setInternalSelections(newSelections);
+      onSelectionChange(newSelections);
+    }
     updateSelectAllState(newSelections);
-    onSelectionChange(newSelections);
   };
 
   const handleColorChange = (maskId: number, color: [number, number, number, number]) => {
@@ -263,8 +277,12 @@ const MaskGrid: React.FC<MaskGridProps> = ({ masks, onSelectionChange }) => {
       },
     };
 
-    setSelections(newSelections);
-    onSelectionChange(newSelections);
+    if (controlledSelections) {
+      onSelectionChange(newSelections);
+    } else {
+      setInternalSelections(newSelections);
+      onSelectionChange(newSelections);
+    }
   };
 
   const setRandomColors = () => {
@@ -275,8 +293,12 @@ const MaskGrid: React.FC<MaskGridProps> = ({ masks, onSelectionChange }) => {
       }
     });
 
-    setSelections(newSelections);
-    onSelectionChange(newSelections);
+    if (controlledSelections) {
+      onSelectionChange(newSelections);
+    } else {
+      setInternalSelections(newSelections);
+      onSelectionChange(newSelections);
+    }
   };
 
   const resetToDefaults = () => {
@@ -288,9 +310,19 @@ const MaskGrid: React.FC<MaskGridProps> = ({ masks, onSelectionChange }) => {
       }
     });
 
-    setSelections(newSelections);
-    onSelectionChange(newSelections);
+    if (controlledSelections) {
+      onSelectionChange(newSelections);
+    } else {
+      setInternalSelections(newSelections);
+      onSelectionChange(newSelections);
+    }
   };
+
+  // Update select all state when selections change
+  React.useEffect(() => {
+    updateSelectAllState(selections);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selections, masks.length]);
 
   const selectedCount = Object.values(selections).filter(s => s.isSelected).length;
 
