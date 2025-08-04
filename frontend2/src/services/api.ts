@@ -7,7 +7,7 @@ import {
   ListImagesResponse,
 } from '../types';
 
-const API_BASE_URL = '';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000';
 
 class ApiService {
   private async handleResponse<T>(response: Response): Promise<T> {
