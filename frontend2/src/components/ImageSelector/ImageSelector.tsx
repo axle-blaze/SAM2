@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useConfirmation } from '../../hooks/useConfirmation';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000';
 
 interface ImageListItem {
   image_id: string;
@@ -31,7 +32,7 @@ const ImageSelector: React.FC<ImageSelectorProps> = ({
     setError('');
     
     try {
-      const response = await fetch('/images');
+      const response = await fetch(`${API_BASE_URL}/images`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }

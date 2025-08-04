@@ -7,17 +7,47 @@ import requests
 from typing import List, Optional, Tuple, Dict
 from datetime import datetime
 from fastapi import FastAPI, HTTPException, Query, Body
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from PIL import Image
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
+# Environment Configuration
+PORT = int(os.getenv("PORT", 8000))
+HOST = os.getenv("HOST", "0.0.0.0")
+JSON_DB_PATH = os.getenv("JSON_DB_PATH", "/home/cognitiveview01/sam/SAM2/backend/data.json")
+SAM_API_URL = os.getenv("SAM_API_URL", "")
+SAM_API_TOKEN = os.getenv("SAM_API_TOKEN", "")
+SAM_API_TIMEOUT = int(os.getenv("SAM_API_TIMEOUT", 150))
+APP_TITLE = os.getenv("APP_TITLE", "SAM Image Masking API")
+APP_DESCRIPTION = os.getenv("APP_DESCRIPTION", "API to generate masks using external SAM service and render them with colors")
+APP_VERSION = os.getenv("APP_VERSION", "1.0.0")
+
+# Parse CORS origins from environment
+cors_origins_str = os.getenv("CORS_ORIGINS", '["*"]')
+try:
+    import ast
+    CORS_ORIGINS = ast.literal_eval(cors_origins_str)
+except:
+    CORS_ORIGINS = ["*"]
 
 app = FastAPI(
-    title="SAM Image Masking API",
-    description="API to generate masks using external SAM service and render them with colors",
-    version="1.0.0"
+    title=APP_TITLE,
+    description=APP_DESCRIPTION,
+    version=APP_VERSION
 )
 
-# JSON file path for persistent storage
-JSON_DB_PATH = "/home/cognitiveview01/sam/SAM2/backend/data.json"
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=CORS_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # --- Database Functions ---
 
@@ -76,11 +106,13 @@ def call_external_sam_api(original_image_b64: str) -> Tuple[List[Mask], int, int
     Calls the external SAM API to generate masks for the given image.
     Returns masks and image dimensions.
     """
-    url = 'https://sam2-segmentation-stable-ec89c96-v8.app.beam.cloud'
+    if not SAM_API_URL or not SAM_API_TOKEN:
+        raise HTTPException(status_code=500, detail="SAM API configuration not found. Please check environment variables.")
+    
     headers = {
         'Connection': 'keep-alive',
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer mFjna2hQQX1UQtkL0__Kk8vxSURDZdWsb45cFRdUzOTeOMsAdY62Eri4f_l6v-evi5XxMg8TPMWyPkf3S1aKgA=='
+        'Authorization': f'Bearer {SAM_API_TOKEN}'
     }
     
     # You may need to modify this payload based on what your SAM API expects
@@ -88,12 +120,12 @@ def call_external_sam_api(original_image_b64: str) -> Tuple[List[Mask], int, int
         "image": original_image_b64
     }
     
-    # try:
-    response = requests.post(url, headers=headers, json=json_payload, timeout=150)
-    response.raise_for_status()
-    print(response.json())  # Debugging line to see the response structure
-    # except requests.RequestException as e:
-    #     raise HTTPException(status_code=502, detail=f"Failed to call external SAM API: {str(e)}")
+    try:
+        response = requests.post(SAM_API_URL, headers=headers, json=json_payload, timeout=SAM_API_TIMEOUT)
+        response.raise_for_status()
+        print(response.json())  # Debugging line to see the response structure
+    except requests.RequestException as e:
+        raise HTTPException(status_code=502, detail=f"Failed to call external SAM API: {str(e)}")
     
     try:
         resp_json = response.json()
@@ -455,4 +487,4 @@ async def delete_image(image_id: str):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host=HOST, port=PORT)
