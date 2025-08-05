@@ -54,6 +54,12 @@ SAM2/
 - **Node.js 16+** with npm
 - **Git** for version control
 
+## 🌐 Live Demo
+
+- **Frontend**: https://sam-2-coral.vercel.app/
+- **Backend API**: https://sam-i1bc.onrender.com/
+- **API Documentation**: https://sam-i1bc.onrender.com/docs
+
 ### 1. Clone and Setup
 
 ```bash
@@ -117,7 +123,7 @@ uvicorn main:app --host 0.0.0.0 --port 8000 --workers 4
 
 ## 🔌 API Reference
 
-### Backend API (`http://localhost:8000`)
+### Backend API (`https://sam-i1bc.onrender.com/`)
 
 #### Core Endpoints
 - `POST /generate_and_store_masks` - Generate and store masks from uploaded image
@@ -131,14 +137,14 @@ uvicorn main:app --host 0.0.0.0 --port 8000 --workers 4
 
 **Generate Masks:**
 ```bash
-curl -X POST "http://localhost:8000/generate_and_store_masks" \
+curl -X POST "https://sam-i1bc.onrender.com/generate_and_store_masks" \
   -H "Content-Type: application/json" \
   -d '{"original_image_b64": "data:image/png;base64,..."}'
 ```
 
 **Render Masks:**
 ```bash
-curl -X POST "http://localhost:8000/render_masks/image_123" \
+curl -X POST "https://sam-i1bc.onrender.com/render_masks/image_123" \
   -H "Content-Type: application/json" \
   -d '{
     "render_instructions": [
@@ -223,6 +229,10 @@ APP_VERSION=1.0.0
 REACT_APP_API_BASE_URL=http://localhost:8000
 REACT_APP_ENV=development
 
+# Production Configuration
+REACT_APP_API_BASE_URL=https://sam-i1bc.onrender.com
+REACT_APP_ENV=production
+
 # Build Configuration
 GENERATE_SOURCEMAP=false
 FAST_REFRESH=true
@@ -265,6 +275,11 @@ docker run -p 8000:8000 -p 3000:3000 sam2-app
 ```
 
 ## ☁️ Cloud Deployment
+
+### Live Deployment
+
+- **Frontend (Vercel)**: https://sam-2-coral.vercel.app/
+- **Backend (Render)**: https://sam-i1bc.onrender.com/
 
 ### Frontend (Vercel/Netlify)
 ```bash
@@ -391,7 +406,7 @@ cd frontend2 && npm install
 
 ### Getting Help
 
-- 📚 **Documentation**: Check `/docs` endpoint for API documentation
+- 📚 **Documentation**: Check https://sam-i1bc.onrender.com/docs for API documentation
 - 🐛 **Issues**: Report bugs in the GitHub Issues section
 - 💬 **Discussions**: Join community discussions
 - 📧 **Support**: Contact the development team
