@@ -13,6 +13,10 @@ A modern, full-stack web application for intelligent image segmentation using th
 - 💾 **Persistent Storage**: Save and manage multiple images and masks
 - 📥 **Export Capabilities**: Download processed images in high quality
 - � **Batch Operations**: Select all, randomize colors, and reset functions
+<img width="1386" height="978" alt="image" src="https://github.com/user-attachments/assets/b878f232-71b3-4f1d-8530-102bb1fa215d" />
+<img width="1386" height="978" alt="image" src="https://github.com/user-attachments/assets/8a461438-ded3-4679-8ea5-736762d559ac" />
+
+<img width="1386" height="978" alt="image" src="https://github.com/user-attachments/assets/1f719c81-4acb-4960-b8b4-50e1a1324f4d" />
 
 ## 📁 Project Structure
 
@@ -63,7 +67,7 @@ SAM2/
 ### 1. Clone and Setup
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/axle-blaze/SAM2
 cd SAM2
 ```
 
@@ -153,6 +157,7 @@ curl -X POST "https://sam-i1bc.onrender.com/render_masks/image_123" \
     ]
   }'
 ```
+
 
 ### External SAM2 API Integration
 
