@@ -18,14 +18,15 @@ load_dotenv()
 # Environment Configuration
 PORT = int(os.getenv("PORT", 8000))
 HOST = os.getenv("HOST", "0.0.0.0")
-JSON_DB_PATH = os.getenv("JSON_DB_PATH", "/home/cognitiveview01/sam/SAM2/backend/data.json")
+# JSON_DB_PATH = os.getenv("JSON_DB_PATH", "/home/cognitiveview01/sam/SAM2/backend/data.json")
 SAM_API_URL = os.getenv("SAM_API_URL", "")
 SAM_API_TOKEN = os.getenv("SAM_API_TOKEN", "")
 SAM_API_TIMEOUT = int(os.getenv("SAM_API_TIMEOUT", 150))
 APP_TITLE = os.getenv("APP_TITLE", "SAM Image Masking API")
 APP_DESCRIPTION = os.getenv("APP_DESCRIPTION", "API to generate masks using external SAM service and render them with colors")
 APP_VERSION = os.getenv("APP_VERSION", "1.0.0")
-
+JSON_DB_PATH = os.path.join(os.path.dirname(__file__), "data.json")
+print(JSON_DB_PATH)
 # Parse CORS origins from environment
 cors_origins_str = os.getenv("CORS_ORIGINS", '["*"]')
 try:
