@@ -416,13 +416,7 @@ cd frontend2 && npm install
 - 💬 **Discussions**: Join community discussions
 - 📧 **Support**: Contact the development team
 
-### Performance Tips
-
-- **Image Size**: Optimize images before upload for faster processing
-- **Browser**: Use modern browsers for best performance
-- **Network**: Ensure stable internet for API calls
-- **Memory**: Close unused browser tabs during processing
 
 ---
 
-**Made with ❤️ using React, FastAPI, and SAM2**
+**Made with using React, FastAPI, and SAM2**
